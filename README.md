@@ -33,25 +33,20 @@ When less than 60% of reviews for a movie or TV show are positive, a green splat
 **Table 1**: Initial dataset
 
 |    |   Freshness |   Review |
-|---:|-----------:|-----------------------:|
-|  0 |       1   |     Manakamana doesn't answer any questions, yet makes its point: Nepal, like the rest of our planet, is a picturesque but far from peaceable kingdom.   |   
-|  1 |       1   |     Wilfully offensive and powered by a chest-thumping machismo, but it's good clean fun.   |
-|  2 |       0   |     It would be difficult to imagine material more wrong for Spade than Lost & Found.  |
-|  3 |       0   |     Despite the gusto its star brings to the role, it's hard to ride shotgun on Hector's voyage of discovery.   |
+|---:|-----------:|:-----------------------|
+|  0 |       1   | Manakamana doesn't answer any questions, yet makes its point: Nepal, like the rest of our planet, is a picturesque but far from peaceable kingdom.   |   
+|  1 |       1   | Wilfully offensive and powered by a chest-thumping machismo, but it's good clean fun.   |
+|  2 |       0   | It would be difficult to imagine material more wrong for Spade than Lost & Found.  |
+|  3 |       0   | Despite the gusto its star brings to the role, it's hard to ride shotgun on Hector's voyage of discovery.   |
 
 
-Freshness
-Review
-1
- Manakamana doesn't answer any questions, yet makes its point: Nepal, like the rest of our planet, is a picturesque but far from peaceable kingdom.
-1
- Wilfully offensive and powered by a chest-thumping machismo, but it's good clean fun.
-0
- It would be difficult to imagine material more wrong for Spade than Lost & Found.
-0
- Despite the gusto its star brings to the role, it's hard to ride shotgun on Hector's voyage of discovery.
+To clean the data, I made a corpus dictionary followed by a bag of words array for each review.  Text processing was performed using Vectorizer followed by......
 
-A ride-sharing company (Company X) is interested in predicting rider retention. To help explore this question, we used a sample dataset of a cohort of users who signed up for an account in January 2014. The data was pulled on July 1, 2014; we consider a user retained if they were “active” (i.e. took a trip) in the preceding 30 days (from the day the data was pulled). In other words, a user is "active" if they have taken a trip since June 1, 2014.
+The result of this data was a vectorized sparse matrix representing the words in each documents.  A graphical representation of the most common words is shown below:
+
+![](images/most_common_words.png)
+
+
 
 Here is a detailed description of the data:
 
