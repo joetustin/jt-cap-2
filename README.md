@@ -1,19 +1,18 @@
-# Natural Language Processing of a Rotten Tomatoes Critical Review Dataset
-"Compared a neural network model to a naive bayes model to see which one worked better
-in regards to accuracy.  Started by doing a Principal Component Analysis to see if there
-was any signal in the data."
+# Sentiment Prediction of a Rotten Tomatoes Critic's Review Dataset using NLP
 
-### Joe Tustin
+### by: Joe Tustin
+
+"The scope of this project included EDA, Feature Analysis, Principal Component Analysis, and a Naive Bayes predictive model."
 
 ## Table of Contents
-1. [Description of Dataset](#Description of Dataset)
+1. [Description of Dataset](#DescriptionofDataset)
 2. [Exploratory Data Analysis](#eda)
     1. [Dataset](#dataset)
     2. [Data Cleaning](#cleaning)
-    3. [Methods Used](#methods used)
+    3. [Methods Used](#methodsused)
 3. [Modelling](#model)
     1. [Naive Bayes](#naivebayes)
-    2. [Recursive Neural Network](#recursive neural network)
+    2. [Neural Network](#concurrentneuralnetwork)
 4. [Conclusions](#conclusions)
 
 ## Description of Dataset <a name="Description of Dataset"></a>
@@ -30,6 +29,8 @@ When less than 60% of reviews for a movie or TV show are positive, a green splat
 
 ### Dataset <a name="dataset"></a>
 
+The initial dataset consisted of 420,000 reviews.  The dataset was evenly balanced with an equal number of positive and negative reviews.  With random guessing, we would have a baseline predictive ability of 50%.  Let's see if we can do better!
+
 **Table 1**: Initial dataset
 
 |    |   Freshness |   Review |
@@ -39,67 +40,39 @@ When less than 60% of reviews for a movie or TV show are positive, a green splat
 |  2 |       0   | It would be difficult to imagine material more wrong for Spade than Lost & Found.  |
 |  3 |       0   | Despite the gusto its star brings to the role, it's hard to ride shotgun on Hector's voyage of discovery.   |
 
+***CATEGORICAL Data: Target***
+- The target was categorical in nature.  A review is either good or bad and is represented as a one or zero.
 
-To clean the data, I made a corpus dictionary followed by a bag of words array for each review.  Text processing was performed using Vectorizer followed by......
+***NUMERICAL Data: Features (after vectorization)***
+- The string was broken down into a list of strings or tokens.  These words were then counted into numerical data using CountVectorizer.  The feature size of this new representation of the data varied from 10,000 to 110,000 features depending on the use of single words to bigrams.  For modeling purposes, I stayed with used 10,000 rows for training purposes and 2,500 rows for test purposes.
 
-The result of this data was a vectorized sparse matrix representing the words in each documents.  A graphical representation of the most common words is shown below:
+### Data Cleaning <a name="cleaning"></a>
+
+CountVectorizer was my workhorse function.  In using this function, I was able to lowercase my data, filter out accents and stop words, set max_features(ie-10,000), and set min_df(ie-2)
+
+***CountVectorizer  (lowercase=True, tokenizer=None, ngram_range=(1,2),strip_accents= "ascii", stop_words='english',
+                             analyzer='word', max_df=1.0, min_df=2,
+                             max_features=10,000)***
+
+The output of the CountVectorizer was a sparse array which was converted to numpy arrays using  the .toarray() method.  This step was needed to get my X_train, X_test, y_train, y_test arrays used for the sklearn models.
+
+
+To explore the data, I made a corpus  and word dictionary followed by a bag of words array (document) for each review.  A graphical representation of the most common words is shown below:
 
 ![](images/most_common_words.png)
 
 
+### Methods Used <a name="methodsused"></a>
+The DataFrame simply consists of two columns(the target and the string document for the reviews):
 
-Here is a detailed description of the data:
 
-***CATEGORICAL***
-- `city`: city this user signed up in
-- `phone`: primary device for this user
+In a world where we generate 2.5 quintillion (10^18) bytes of data every day, sentiment analysis has become a key tool for making sense of that data. This has allowed companies to get key insights and automate all kinds of processes. In many of the articles referring to sentiment analysis, a plot of the ditribution of review lengths for both postitive and negative reviews was recommended as a good first step.  My plot for positive and negative reviews is shown below, but unfortunately, no new useful information was found.
 
-***NUMERICAL***
-- `signup_date`: date of account registration; in the form `YYYYMMDD`
-- `last_trip_date`: the last time this user completed a trip; in the form `YYYYMMDD`
-- `avg_dist`: the average distance (in miles) per trip taken in the first 30 days after signup
-- `avg_rating_by_driver`: the rider’s average rating by their drivers over all of their trips
-- `avg_rating_of_driver`: the rider’s average rating of their drivers over all of their trips
-- `surge_pct`: the percent of trips taken with surge multiplier > 1
-- `avg_surge`: The average surge multiplier over all of this user’s trips
-- `trips_in_first_30_days`: the number of trips this user took in the first 30 days after signing up
-- `weekday_pct`: the percent of the user’s trips occurring during a weekday
-- `luxury_car_user`: TRUE if the user took a luxury car in their first 30 days; FALSE otherwise
+![](images/word_count_dist.png)
 
-**Table 1**: Initial dataset
-
-|    |   avg_dist |   avg_rating_by_driver |   avg_rating_of_driver |   avg_surge | city           | last_trip_date      | phone   | signup_date         |   surge_pct |   trips_in_first_30_days | luxury_car_user   |   weekday_pct |
-|---:|-----------:|-----------------------:|-----------------------:|------------:|:---------------|:--------------------|:--------|:--------------------|------------:|-------------------------:|:------------------|--------------:|
-|  0 |       3.67 |                    5   |                    4.7 |        1.1  | King's Landing | 2014-06-17 00:00:00 | iPhone  | 2014-01-25 00:00:00 |        15.4 |                        4 | True              |          46.2 |
-|  1 |       8.26 |                    5   |                    5   |        1    | Astapor        | 2014-05-05 00:00:00 | Android | 2014-01-29 00:00:00 |         0   |                        0 | False             |          50   |
-|  2 |       0.77 |                    5   |                    4.3 |        1    | Astapor        | 2014-01-07 00:00:00 | iPhone  | 2014-01-06 00:00:00 |         0   |                        3 | False             |         100   |
-|  3 |       2.36 |                    4.9 |                    4.6 |        1.14 | King's Landing | 2014-06-29 00:00:00 | iPhone  | 2014-01-10 00:00:00 |        20   |                        9 | True              |          80   |
-|  5 |      10.56 |                    5   |                    3.5 |        1    | Winterfell     | 2014-06-06 00:00:00 | iPhone  | 2014-01-09 00:00:00 |         0   |                        2 | True              |         100   |
 
 ### Data Cleaning <a name="cleaning"></a>
 
-Table 2 shows the data types and number of null values for each column.
-
-**Table 2**: Initial data type and null value descriptions
-
- |   column name |   information |
- |---:|-----------:|
-|avg_dist  |                50000 non-null float64 |
-|avg_rating_by_driver   |   49799 non-null float64|
-|avg_rating_of_driver  |    41878 non-null float64|
-|avg_surge    |             50000 non-null float64|
-|city    |                  50000 non-null object|
-|last_trip_date    |        50000 non-null object|
-|phone       |              49604 non-null object|
-|signup_date    |           50000 non-null object|
-|surge_pct      |           50000 non-null float64|
-|trips_in_first_30_days   | 50000 non-null int64|
-|luxury_car_user |          50000 non-null bool|
-|weekday_pct    |           50000 non-null float64|
-
-There are 3 columns with null values, `avg_rating_by_driver`, `avg_rating_of_driver` and `phone`. These will need to be dealt with alongisde the incorrectly typed `signup_date` and `last_trip_date` columns.  Furthermore, the 2 categorical values, `city` and `phone` need to be converted to dummy variables.
-
-Figure 1 shows the correlation matrix for the features.
 
 ![](images/correlation_matrix.png)
 
@@ -135,24 +108,15 @@ In looking at the data, the `signup_date` appears to be a key feature. The longe
 
 There was still no target value for modeling, since there was no feature corresponding to whether or not a user had churned. The `churn` column was engineered from the values of the `last_trip_date` and the date that the data was pulled, July 1st. If there had been more than 30 days since a user had last ridden and the date the data was pulled, they were said to have churned.
 
-**Table 3**: Final dataset for modeling
-
-|    |   avg_dist |   avg_rating_by_driver |   avg_rating_of_driver |   avg_surge | last_trip_date      | signup_date         |   surge_pct |   trips_in_first_30_days | luxury_car_user   |   weekday_pct |   city_King's Landing |   city_Winterfell |   phone_Android |   phone_iPhone |   days_since_last_ride | churn   |   days_since_customer |
-|---:|-----------:|-----------------------:|-----------------------:|------------:|:--------------------|:--------------------|------------:|-------------------------:|:------------------|--------------:|----------------------:|------------------:|----------------:|---------------:|-----------------------:|:--------|----------------------:|
-|  0 |       3.67 |                    5   |                    4.7 |        1.1  | 2014-06-17 00:00:00 | 2014-01-25 00:00:00 |        15.4 |                        4 | True              |          46.2 |                     1 |                 0 |               0 |              1 |                     14 | False   |                   157 |
-|  1 |       8.26 |                    5   |                    5   |        1    | 2014-05-05 00:00:00 | 2014-01-29 00:00:00 |         0   |                        0 | False             |          50   |                     0 |                 0 |               1 |              0 |                     57 | True    |                   153 |
-|  2 |       0.77 |                    5   |                    4.3 |        1    | 2014-01-07 00:00:00 | 2014-01-06 00:00:00 |         0   |                        3 | False             |         100   |                     0 |                 0 |               0 |              1 |                    175 | True    |                   176 |
-|  3 |       2.36 |                    4.9 |                    4.6 |        1.14 | 2014-06-29 00:00:00 | 2014-01-10 00:00:00 |        20   |                        9 | True              |          80   |                     1 |                 0 |               0 |              1 |                      2 | False   |                   172 |
-|  4 |       3.13 |                    4.9 |                    4.4 |        1.19 | 2014-03-15 00:00:00 | 2014-01-27 00:00:00 |        11.8 |                       14 | False             |          82.4 |                     0 |                 1 |               1 |              0 |                    108 | True    |                   155 |
 
 
 ## Modelling <a name="model"></a>
 
-One parametric (logistic regression) and two non-parametric (XGboost and Random Forest) models were trained and compared.
+It’s estimated that different people only agree around 60-65% of the time when judging the sentiment for a particular piece of text.  So... in theory, we do not have to be super accurate in our modelling as the target that we are fitting to may not be very truthful by nature.
 
-### Non-Parametric <a name="non"></a>
+### Principal Component Analysis <a name="non"></a>
 
-Algorithms that do not make strong assumptions about the form of the mapping function are called nonparametric machine learning algorithms. By not making assumptions, they are free to learn any functional form from the training data.
+It’s estimated that 80% of the world’s data is unstructured and not organized in a pre-defined manner.
 
 #### XGBoost <a name="boost"></a>
 
@@ -190,16 +154,8 @@ Assumptions can greatly simplify the learning process, but can also limit what c
 
 Test Accuracy for Random Forest Model : 70.8%
 
-## Insights <a name="insights"></a>
+## Conclusions <a name="conclusions"></a>
 
-`King's Landing`and `avg_rating_by_driver` both show up as high importance features in all 3 models.
+1. Natural Laguage Processing is hard.  There is an excessive number of features leading to model complexing.  Using models that reduce or simplify this complexity is key as well as data cleaning measures which simplify the tfidf matrix as well as the corpus dictionary of words.
 
-For interpretability, the logistic model feature graph is interesting as it shows which features are driving the target to no churn (negative coefficients) and which features are leading to churn (positive coefficients).  It looks like Android users and people who receive ratings from drivers are the churners.
-
-![](images/rating_by_driver.png)
-
-![](images/rating_of_driver.png)
-
-![](images/distance.png)
-
-![](images/surge_pct.png)
+2. As a side note, check out "Return of the Killer Tomatoes" starring a very young George Clooney.  It received a Rotten Tomatoes score of: Rotten  Do you agree?
