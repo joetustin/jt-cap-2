@@ -9,10 +9,9 @@
 2. [Exploratory Data Analysis](#eda)
     1. [Dataset](#dataset)
     2. [Data Cleaning](#cleaning)
-    3. [Methods Used](#methodsused)
+    3. [Sentiment Analysis](#sentimentanalysis)
 3. [Modelling](#model)
     1. [Naive Bayes](#naivebayes)
-    2. [Neural Network](#concurrentneuralnetwork)
 4. [Conclusions](#conclusions)
 
 ## Description of Dataset <a name="Description of Dataset"></a>
@@ -40,8 +39,10 @@ The initial dataset consisted of 420,000 reviews.  The dataset was evenly balanc
 |  2 |       0   | It would be difficult to imagine material more wrong for Spade than Lost & Found.  |
 |  3 |       0   | Despite the gusto its star brings to the role, it's hard to ride shotgun on Hector's voyage of discovery.   |
 
+
 ***CATEGORICAL Data: Target***
 - The target was categorical in nature.  A review is either good or bad and is represented as a one or zero.
+
 
 ***NUMERICAL Data: Features (after vectorization)***
 - The string was broken down into a list of strings or tokens.  These words were then counted into numerical data using CountVectorizer.  The feature size of this new representation of the data varied from 10,000 to 110,000 features depending on the use of single words to bigrams.  For modeling purposes, I stayed with used 10,000 rows for training purposes and 2,500 rows for test purposes.
@@ -57,105 +58,43 @@ CountVectorizer was my workhorse function.  In using this function, I was able t
 The output of the CountVectorizer was a sparse array which was converted to numpy arrays using  the .toarray() method.  This step was needed to get my X_train, X_test, y_train, y_test arrays used for the sklearn models.
 
 
-To explore the data, I made a corpus  and word dictionary followed by a bag of words array (document) for each review.  A graphical representation of the most common words is shown below:
+To explore the data, I made a corpus  and word dictionary followed by a bag of words array (document) for each review.  A graphical representation of the most common words for both positive and negative reviews are shown below:
 
-![](images/most_common_words.png)
+![](images/most_common_words_pos.png)
+![](images/most_common_words_neg.png)
 
-
-### Methods Used <a name="methodsused"></a>
+### Sentiment Analysis <a name="sentimentanalysis"></a>
 The DataFrame simply consists of two columns(the target and the string document for the reviews):
 
 
-In a world where we generate 2.5 quintillion (10^18) bytes of data every day, sentiment analysis has become a key tool for making sense of that data. This has allowed companies to get key insights and automate all kinds of processes. In many of the articles referring to sentiment analysis, a plot of the ditribution of review lengths for both postitive and negative reviews was recommended as a good first step.  My plot for positive and negative reviews is shown below, but unfortunately, no new useful information was found.
+In a world where we generate 2.5 quintillion (10^18) bytes of data every day, sentiment analysis has become a key tool for making sense of that data. This has allowed companies to get key insights and automate all kinds of processes. In many of the articles referring to sentiment analysis, a plot of the distribution of review lengths for both positive and negative reviews was recommended as a good first step.  My plot for positive and negative reviews is shown below, but unfortunately, no new useful information was found.
 
 ![](images/word_count_dist.png)
 
 
-### Data Cleaning <a name="cleaning"></a>
+## Modeling <a name="model"></a>
+To model this dataset, several models were considered.  Naive Bayes, Neural Networks(RNN), and Logistic Regression models were all good candidates for Natural Language Processing.  Ultimately, I chose a multinomial Naive Bayes model based on its ease of use and success as seen in previous work.  The Laplacian smoothing coefficient (alpha) was kept at a value of one.  The best predictive result for the model (accuracy) was 74%.  The result was found using a tf-idf matrix converted from the original count vectorization matrix using TfidfTransformer. In this best case model, the max number of features was 50,000, the min_df was 2, and bigrams were used as well as single word features.  The model results improved when switching from count vectorized data to tf-idf data.  The results also improved when switching form single word features to a combination with bigrams.  In both cases, the results improved by about 1.5%.  
 
 
-![](images/correlation_matrix.png)
+It’s estimated that different people only agree around 60-65% of the time when judging the sentiment for a particular piece of text.  So... in theory, it is interesting that the result of the model is on this same order.
 
-**Figure 1**: Correlation matrix for the features in the dataset
-
-The only features that seem strongly correlated are `surge_pct` and `avg_surge`, therefore no features needed to be dropped.
+### Something a little fun! "Thanks for the suggestion Kayla"
 
 
-**Table 3**: Cleaned data type and null value descriptions
-
- |   column name |   information |
- |---:|-----------:|
-|avg_dist                |  50000 non-null float64|
-|avg_rating_by_driver    |  50000 non-null float64|
-|avg_rating_of_driver     | 50000 non-null float64|
-|avg_surge                 |50000 non-null float64|
-|last_trip_date      |      50000 non-null datetime64[ns]|
-|signup_date          |     50000 non-null datetime64[ns]|
-|surge_pct             |    50000 non-null float64|
-|trips_in_first_30_days |   50000 non-null int64|
-|luxury_car_user    |       50000 non-null bool|
-|weekday_pct         |      50000 non-null float64|
-|city_King's Landing  |     50000 non-null uint8|
-|city_Winterfell     |      50000 non-null uint8|
-|phone_Android        |     50000 non-null uint8|
-|phone_iPhone          |    50000 non-null uint8|
-
-### Data Cleaning <a name="cleaning"></a>
-
-In looking at the data, the `signup_date` appears to be a key feature. The longer a user has been active, the more likely they are to continue being an active user. Also, users who use the luxury car service (`luxury_car_user` = True), have expendable income and are more likely to use a car service more often. The `avg_rating_of_driver` field is also important, as users who are consistently rating their drivers highly, are probably more likely to be happy with the product. Furthermore, our 2 categorical features are probably also correlated with whether or not a user churns. The `city` a user lives in, whether it is denser or more spread out, the service has good coverage or bad, etc. could be correlated to their happiness with the product. Also, the `phone` feature is probably useful, however this feature is dominated by iPhone users (by 3x) therefore, there could be some bias in this data.
-
-### Feature Engineering <a name="engineering"></a>
-
-There was still no target value for modeling, since there was no feature corresponding to whether or not a user had churned. The `churn` column was engineered from the values of the `last_trip_date` and the date that the data was pulled, July 1st. If there had been more than 30 days since a user had last ridden and the date the data was pulled, they were said to have churned.
+![](images/word_cloud.png)
 
 
 
-## Modelling <a name="model"></a>
 
-It’s estimated that different people only agree around 60-65% of the time when judging the sentiment for a particular piece of text.  So... in theory, we do not have to be super accurate in our modelling as the target that we are fitting to may not be very truthful by nature.
 
-### Principal Component Analysis <a name="non"></a>
 
-It’s estimated that 80% of the world’s data is unstructured and not organized in a pre-defined manner.
-
-#### XGBoost <a name="boost"></a>
-
-![](images/feature_importance_grad_boost.png)
-
-**Figure 3**: Feature importances for the XGboost model
-
-Test Accuracy for XGBoost model: 78.8%
-
-Hyper Parameters:
- - max_depth=2
- - learning_rate=0.05
- - n_estimators=2000
- - subsample = .4
-
-#### Random Forest <a name="rf"></a>
-
-![](images/random_forest_importances.png)
-
-**Figure 4**: Feature importances for the random forest model
-
-Test Accuracy for Random Forest Model : 77.4%
-
-Hyper Parameters:
- - n_estimators=200
- - max_depth=10
-
-### Parametric <a name="par"></a>
-
-Assumptions can greatly simplify the learning process, but can also limit what can be learned. Algorithms that simplify the function to a known form are called parametric machine learning algorithms.
-
-#### Logistic Regression <a name="rf"></a>
-
-![](images/logit_features2.png)
-
-Test Accuracy for Random Forest Model : 70.8%
 
 ## Conclusions <a name="conclusions"></a>
 
-1. Natural Laguage Processing is hard.  There is an excessive number of features leading to model complexing.  Using models that reduce or simplify this complexity is key as well as data cleaning measures which simplify the tfidf matrix as well as the corpus dictionary of words.
+1. Natural Language Processing is hard!  There is an excessive number of features leading to model complexing.  Using models that reduce or simplify this complexity is key as well as data cleaning measures which simplify the tf-idf matrix as well as the corpus dictionary of words.
 
-2. As a side note, check out "Return of the Killer Tomatoes" starring a very young George Clooney.  It received a Rotten Tomatoes score of: Rotten  Do you agree?
+2.  I need to re-address my principal component analysis.  I had extremely bad results which do not match my predictive success rate.  I will have to redo this part.  I would expect to have more of the variance accounted for in the first two principal components.  
+
+3. Feature engineering is key.  I would like to build a dictionary of the fifty most predictive features for both positive and negative results using both single words and bigrams, and then, weight these features more highly than my other features.  And....try, try again.
+
+2. As a side note, check out "Return of the Killer Tomatoes" starring a very young George Clooney.  It received a Rotten Tomatoes score of: "Rotten".  It would be an interesting late night, B-movie to watch.  Would you agree with its rating?  As with all nlp, it is subjective which makes it hard to predict!!!
